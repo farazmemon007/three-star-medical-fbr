@@ -17,6 +17,10 @@ if (!function_exists('numberToWordsReturn')) {
         return trim($str).' RUPEES ONLY';
     }
 }
+$logoPath = public_path('assets/images/three_star_logo.jpg');
+$logoSrc = file_exists($logoPath)
+    ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath))
+    : asset('assets/images/three_star_logo.jpg');
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -56,10 +60,8 @@ if (!function_exists('numberToWordsReturn')) {
   }
 
   .header { display: flex; align-items: center; gap: 18px; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 8px; position: relative; z-index: 1; }
-  .logo-circle { width: 78px; height: 78px; border: 2px solid #c0392b; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
-  .logo-star  { font-size: 22px; color: #c0392b; line-height: 1; }
-  .logo-symbol { font-size: 18px; color: #c0392b; font-weight: bold; }
-  .logo-text  { font-size: 7px; font-weight: bold; letter-spacing: 1px; color: #c0392b; text-align: center; margin-top: 2px; }
+  .logo-box { flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .invoice-logo { height: 75px; width: auto; max-width: 130px; object-fit: contain; display: block; }
   .company-info h1 { font-family: 'Palatino Linotype', Palatino, serif; font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #000; line-height: 1.1; }
   .company-info .addr { font-size: 10px; margin-top: 4px; line-height: 1.5; }
 
@@ -130,10 +132,8 @@ if (!function_exists('numberToWordsReturn')) {
 
   <!-- HEADER -->
   <div class="header">
-    <div class="logo-circle">
-      <div class="logo-star">&#10022;&#10022;&#10022;</div>
-      <div class="logo-symbol">&#9400;</div>
-      <div class="logo-text">MARK OF QUALITY</div>
+    <div class="logo-box">
+      <img src="{{ $logoSrc }}" alt="Three Stars Medical Supplies" class="invoice-logo">
     </div>
     <div class="company-info">
       <h1>THREE STARS MEDICAL SUPPLIES</h1>

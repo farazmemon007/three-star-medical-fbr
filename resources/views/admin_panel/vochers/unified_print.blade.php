@@ -80,6 +80,11 @@
     if ($totalDebit == 0 && $voucher->total_amount > 0) $totalDebit = (float)$voucher->total_amount;
     if ($totalCredit == 0 && $voucher->total_amount > 0) $totalCredit = (float)$voucher->total_amount;
     $amountWords = getAmountInWords(max($totalDebit, $totalCredit));
+
+    $logoPath = public_path('assets/images/three_star_logo.jpg');
+    $logoSrc = file_exists($logoPath)
+        ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath))
+        : asset('assets/images/three_star_logo.jpg');
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -108,8 +113,8 @@
 
   /* HEADER */
   .header { display:flex; align-items:center; gap:16px; margin-bottom:6px; }
-  .logo { width:66px; height:66px; position:relative; flex-shrink:0; }
-  .logo svg { width:66px; height:66px; }
+  .logo { height:66px; width:auto; max-width:110px; position:relative; flex-shrink:0; display:flex; align-items:center; }
+  .logo img { height:66px; width:auto; max-width:110px; object-fit:contain; display:block; }
   .voucher-title { font-size:23px; font-weight:900; letter-spacing:0.5px; border-bottom:2px solid #111; padding-bottom:3px; flex:1; }
 
   /* TOP META */
@@ -222,12 +227,7 @@
   <!-- HEADER -->
   <div class="header">
     <div class="logo">
-      <svg viewBox="0 0 68 68" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="34" cy="34" r="32" fill="none" stroke="#5aace4" stroke-width="2"/>
-        <text x="34" y="22" text-anchor="middle" font-size="16" fill="#5aace4">&#10022;&#10022;&#10022;</text>
-        <text x="34" y="40" text-anchor="middle" font-size="16" fill="#5aace4" font-weight="bold">&#9400;</text>
-        <text x="34" y="52" text-anchor="middle" font-size="6" fill="#5aace4" font-weight="bold" letter-spacing="1">MARK OF QUALITY</text>
-      </svg>
+      <img src="{{ $logoSrc }}" alt="Three Stars Medical Supplies">
     </div>
     <div class="voucher-title">{{ $title }}</div>
   </div>

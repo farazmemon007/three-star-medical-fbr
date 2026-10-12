@@ -27,6 +27,10 @@ if (!$officerName && $sale->employee_id) {
     $emp = \App\Models\Hr\Employee::find($sale->employee_id);
     $officerName = $emp ? ($emp->first_name . ' ' . $emp->last_name) : null;
 }
+$logoPath = public_path('assets/images/three_star_logo.jpg');
+$logoSrc = file_exists($logoPath)
+    ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath))
+    : asset('assets/images/three_star_logo.jpg');
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -52,10 +56,8 @@ if (!$officerName && $sale->employee_id) {
   .a4-wrapper { width: 794px; min-height: 1123px; margin: 20px auto; background: #fff; padding: 26px 30px; box-shadow: 0 2px 14px rgba(0,0,0,0.25); position: relative; }
 
   .header { display: flex; align-items: center; gap: 18px; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 8px; }
-  .logo-circle { width: 78px; height: 78px; border: 2px solid #4a90c4; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
-  .logo-star { font-size: 22px; color: #4a90c4; line-height: 1; }
-  .logo-symbol { font-size: 18px; color: #4a90c4; font-weight: bold; }
-  .logo-text { font-size: 7px; font-weight: bold; letter-spacing: 1px; color: #4a90c4; text-align: center; margin-top: 2px; }
+  .logo-box { flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .invoice-logo { height: 75px; width: auto; max-width: 130px; object-fit: contain; display: block; }
   .company-info h1 { font-family: 'Palatino Linotype', Palatino, serif; font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #000; line-height: 1.1; }
   .company-info .addr { font-size: 10px; margin-top: 4px; line-height: 1.5; }
 
@@ -139,10 +141,8 @@ if (!$officerName && $sale->employee_id) {
 
   <!-- HEADER -->
   <div class="header">
-    <div class="logo-circle">
-      <div class="logo-star">&#10022;&#10022;&#10022;</div>
-      <div class="logo-symbol">&#9400;</div>
-      <div class="logo-text">MARK OF QUALITY</div>
+    <div class="logo-box">
+      <img src="{{ $logoSrc }}" alt="Three Stars Medical Supplies" class="invoice-logo">
     </div>
     <div class="company-info">
       <h1>THREE STARS MEDICAL SUPPLIES</h1>

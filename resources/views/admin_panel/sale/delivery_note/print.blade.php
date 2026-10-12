@@ -1,3 +1,9 @@
+@php
+$logoPath = public_path('assets/images/three_star_logo.jpg');
+$logoSrc = file_exists($logoPath)
+    ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath))
+    : asset('assets/images/three_star_logo.jpg');
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,7 +33,7 @@ body{font-family:Arial,sans-serif;font-size:11px;background:#888;color:#000;}
 /* HEADER */
 .header{display:flex;align-items:center;gap:14px;border-bottom:1.5px solid #000;padding-bottom:10px;margin-bottom:10px;}
 .logo-wrap{flex-shrink:0;}
-.logo-wrap svg{width:90px;height:90px;}
+.logo-wrap img{height:75px;width:auto;max-width:130px;object-fit:contain;display:block;}
 .co-info{font-size:10.5px;line-height:1.7;}
 
 .doc-title{font-size:18px;font-weight:bold;margin-bottom:8px;}
@@ -110,18 +116,7 @@ table.t tbody td.r{text-align:right;}
   <!-- HEADER -->
   <div class="header">
     <div class="logo-wrap">
-      <svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="45" cy="45" r="42" fill="none" stroke="#2eaad1" stroke-width="2.5"/>
-        <circle cx="45" cy="45" r="36" fill="none" stroke="#2eaad1" stroke-width="1"/>
-        <!-- stars -->
-        <text x="22" y="30" font-size="13" fill="#2eaad1" text-anchor="middle">&#10022;</text>
-        <text x="45" y="22" font-size="13" fill="#2eaad1" text-anchor="middle">&#10022;</text>
-        <text x="68" y="30" font-size="13" fill="#2eaad1" text-anchor="middle">&#10022;</text>
-        <!-- center emblem -->
-        <text x="45" y="56" font-size="22" fill="#2eaad1" text-anchor="middle" font-weight="bold">&#9400;</text>
-        <!-- bottom text -->
-        <text x="45" y="70" font-size="6.5" fill="#2eaad1" text-anchor="middle" font-weight="bold" letter-spacing="1">MARK OF QUALITY</text>
-      </svg>
+      <img src="{{ $logoSrc }}" alt="Three Stars Medical Supplies">
     </div>
     <div class="co-info">
       <strong>{{ $dc->branch->name ?? 'Head Office' }} :</strong> {{ $dc->branch->address ?? 'M17-18 Mezanine Floor Seth Centre 10 Syed Mouj Darya Road (Edward Road) Lahore..' }}<br>
