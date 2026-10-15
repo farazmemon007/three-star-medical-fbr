@@ -301,6 +301,86 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
+        /* Modern ERP Sale Action Buttons */
+        .btn-sale-action {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            border: none;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-sizing: border-box;
+            line-height: 1.2;
+        }
+
+        .btn-sale-confirm {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff !important;
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
+        }
+        .btn-sale-confirm:hover:not(:disabled) {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(5, 150, 105, 0.35);
+            color: #ffffff !important;
+        }
+        .btn-sale-confirm:disabled {
+            background: #e2e8f0 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        .btn-sale-fbr {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff !important;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+        }
+        .btn-sale-fbr:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(2, 132, 199, 0.35);
+            color: #ffffff !important;
+        }
+        .btn-sale-fbr:disabled {
+            background: #f8fafc !important;
+            color: #64748b !important;
+            border: 1.5px dashed #cbd5e1 !important;
+            box-shadow: none !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+            opacity: 1 !important;
+        }
+        .btn-sale-fbr.is-posted {
+            background: #ecfdf5 !important;
+            color: #047857 !important;
+            border: 1.5px solid #10b981 !important;
+            box-shadow: none !important;
+            cursor: default !important;
+        }
+
+        .btn-sale-draft {
+            background: #ffffff;
+            color: #475569 !important;
+            border: 1.5px solid #cbd5e1;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-sale-draft:hover:not(:disabled) {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #1e293b !important;
+            transform: translateY(-1px);
+        }
+
         .btn-erp-secondary:hover {
             background-color: #f8fafc;
             border-color: #94a3b8;
@@ -766,21 +846,21 @@
                                         <input type="text" name="total_net" id="final_net_total" class="bg-transparent border-0 text-end summary-total-value w-50" readonly value="{{ number_format($sale->total_net, 2) }}">
                                     </div>
                                     
-                                    <div class="mt-4 d-grid gap-2">
-                                        <button type="button" id="btnSaveOnly" class="btn btn-erp btn-erp-secondary w-100 justify-content-center">
-                                            <i class="bi bi-save"></i> Update Draft
+                                    <div class="mt-4 d-flex flex-column gap-2">
+                                        <button type="button" id="btnSaveOnly" class="btn-sale-action btn-sale-draft">
+                                            <i class="bi bi-save fs-6"></i> Update Draft
                                         </button>
-                                        <button type="button" id="btnConfirm" class="btn btn-erp btn-erp-success w-100 justify-content-center">
-                                            <i class="bi bi-check2-circle"></i> Confirm & Post SIN
+                                        <button type="button" id="btnConfirm" class="btn-sale-action btn-sale-confirm">
+                                            <i class="bi bi-check2-circle fs-6"></i> Confirm & Post SIN
                                         </button>
                                         <button type="button" id="btnPostToFbr" 
-                                            class="btn btn-erp btn-erp-warning w-100 justify-content-center text-dark font-weight-bold" 
+                                            class="btn-sale-action btn-sale-fbr {{ $sale->fbr_status === 'posted' ? 'is-posted' : '' }}" 
                                             data-sale-id="{{ $sale->id }}"
                                             {{ ($sale->sale_status !== 'post' || $sale->fbr_status === 'posted') ? 'disabled' : '' }}>
                                             @if($sale->fbr_status === 'posted')
-                                                <i class="bi bi-check-circle-fill text-success"></i> FBR Posted ({{ $sale->fbr_invoice_no }})
+                                                <i class="bi bi-check-circle-fill text-success fs-6"></i> FBR Posted ({{ $sale->fbr_invoice_no }})
                                             @else
-                                                <i class="bi bi-cloud-arrow-up-fill"></i> POST TO FBR
+                                                <i class="bi bi-cloud-arrow-up-fill fs-6"></i> POST TO FBR
                                             @endif
                                         </button>
                                     </div>
@@ -1138,6 +1218,7 @@
             $(document).on('fbr:posted', function(e, data) {
                 $('#btnPostToFbr')
                     .prop('disabled', true)
+                    .addClass('is-posted')
                     .html('<i class="bi bi-check-circle-fill text-success me-1"></i> FBR Posted (' + data.fbrInvoiceNo + ')');
             });
 

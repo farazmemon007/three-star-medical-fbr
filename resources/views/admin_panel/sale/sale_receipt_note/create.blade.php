@@ -389,6 +389,86 @@
             box-shadow: none !important;
         }
 
+        /* Modern ERP Sale Action Buttons */
+        .btn-sale-action {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            border: none;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-sizing: border-box;
+            line-height: 1.2;
+        }
+
+        .btn-sale-confirm {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff !important;
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
+        }
+        .btn-sale-confirm:hover:not(:disabled) {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(5, 150, 105, 0.35);
+            color: #ffffff !important;
+        }
+        .btn-sale-confirm:disabled {
+            background: #e2e8f0 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        .btn-sale-fbr {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff !important;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+        }
+        .btn-sale-fbr:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(2, 132, 199, 0.35);
+            color: #ffffff !important;
+        }
+        .btn-sale-fbr:disabled {
+            background: #f8fafc !important;
+            color: #64748b !important;
+            border: 1.5px dashed #cbd5e1 !important;
+            box-shadow: none !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+            opacity: 1 !important;
+        }
+        .btn-sale-fbr.is-posted {
+            background: #ecfdf5 !important;
+            color: #047857 !important;
+            border: 1.5px solid #10b981 !important;
+            box-shadow: none !important;
+            cursor: default !important;
+        }
+
+        .btn-sale-draft {
+            background: #ffffff;
+            color: #475569 !important;
+            border: 1.5px solid #cbd5e1;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-sale-draft:hover:not(:disabled) {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #1e293b !important;
+            transform: translateY(-1px);
+        }
+
         .btn-erp-secondary {
             background-color: #ffffff;
             color: #475569;
@@ -959,26 +1039,26 @@
                                     </div>
 
                                     <!-- Action Buttons -->
-                                    <div class="d-grid gap-2 mt-4 mt-xl-5">
+                                    <div class="d-flex flex-column gap-2 mt-4">
                                         {{-- CONFIRM & POST button: visible in sin mode, hidden in so mode (JS can un-hide it) --}}
                                         <button type="button"
-                                            class="btn-erp btn-erp-success justify-content-center shadow-lg pt-3 pb-3"
-                                            id="btnConfirm" style="font-size: 1rem; {{ request()->query('mode') == 'so' ? 'display:none;' : '' }}">
-                                            <i class="bi bi-check-circle-fill"></i> CONFIRM &amp; POST SALE
+                                            class="btn-sale-action btn-sale-confirm"
+                                            id="btnConfirm" style="{{ request()->query('mode') == 'so' ? 'display:none;' : '' }}">
+                                            <i class="bi bi-check-circle-fill fs-6"></i> CONFIRM &amp; POST SALE
                                         </button>
                                         {{-- Save Draft button: visible in so mode, hidden in sin mode (JS can un-hide it) --}}
-                                        <button type="button" class="btn-erp btn-erp-primary justify-content-center"
+                                        <button type="button" class="btn-sale-action btn-sale-draft"
                                             id="btnSaveOnly" style="{{ request()->query('mode') != 'so' ? 'display:none;' : '' }}">
-                                            <i class="bi bi-save2"></i> Save Sale Order (Draft)
+                                            <i class="bi bi-save2 fs-6"></i> Save Sale Order (Draft)
                                         </button>
                                         {{-- POST TO FBR button: disabled by default, enabled after sale is posted --}}
                                         <button type="button"
-                                            class="btn-erp btn-erp-warning justify-content-center shadow-sm py-3 text-dark font-weight-bold"
+                                            class="btn-sale-action btn-sale-fbr"
                                             id="btnPostToFbr"
                                             disabled
                                             title="Post this sale invoice to FBR Digital Invoicing system"
-                                            style="font-size: 0.95rem; letter-spacing: 0.5px; {{ request()->query('mode') == 'so' ? 'display:none;' : '' }}">
-                                            <i class="bi bi-cloud-arrow-up-fill me-1"></i> POST TO FBR
+                                            style="{{ request()->query('mode') == 'so' ? 'display:none;' : '' }}">
+                                            <i class="bi bi-cloud-arrow-up-fill fs-6"></i> POST TO FBR
                                         </button>
                                     </div>
                                     <div class="mt-3 text-center">
@@ -1605,7 +1685,6 @@
                                 $('#btnPostToFbr')
                                     .prop('disabled', false)
                                     .attr('data-sale-id', createdSaleId)
-                                    .addClass('shadow-lg border-2 border-warning')
                                     .css('cursor', 'pointer');
                             }
 
@@ -1673,9 +1752,8 @@
         $(document).on('fbr:posted', function(e, data) {
             $('#btnPostToFbr')
                 .prop('disabled', true)
-                .css('cursor', 'not-allowed')
-                .removeClass('btn-erp-warning shadow-lg border-warning')
-                .addClass('btn-erp-secondary')
+                .css('cursor', 'default')
+                .addClass('is-posted')
                 .html('<i class="bi bi-check-circle-fill text-success me-1"></i> FBR Posted: ' + data.fbrInvoiceNo);
         });
 

@@ -88,11 +88,12 @@ if (!empty($fbrInvoiceNumber)) {
   .party-block { font-size: 10.5px; line-height: 1.85; flex: 1; }
   .prow { display: flex; gap: 4px; }
   .plbl { font-weight: bold; min-width: 68px; }
-  .barcode-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-start; padding-top: 2px; }
-  .barcode-num { font-size: 8.5px; letter-spacing: 0.5px; text-align: center; margin-top: 1px; font-weight: bold; width: 100%; }
-  .fbr-box-wrapper { margin-top: 6px; text-align: left; }
-  .fbr-box-title { font-size: 9.5px; font-weight: bold; color: #000; margin-bottom: 3px; white-space: nowrap; letter-spacing: 0.2px; }
-  .fbr-box-num { font-size: 9.5px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; margin-left: 6px; }
+  .barcode-right { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 2px; }
+  .barcode-num { font-size: 8.5px; letter-spacing: 0.5px; text-align: center; margin-top: 1px; font-weight: bold; }
+  .fbr-footer-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .fbr-box-wrapper { text-align: left; }
+  .fbr-box-title { font-size: 9.5px; font-weight: bold; color: #000; margin-bottom: 4px; white-space: nowrap; letter-spacing: 0.2px; }
+  .fbr-box-num { font-size: 9.5px; font-weight: bold; font-family: Arial, sans-serif; margin-left: 6px; }
   .fbr-box-badges { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
   .fbr-qr-img { width: 70px; height: 70px; display: block; image-rendering: pixelated; }
   .fbr-badge-img { height: 70px; width: auto; max-width: 86px; object-fit: contain; display: block; }
@@ -208,22 +209,6 @@ if (!empty($fbrInvoiceNumber)) {
         {!! DNS1D::getBarcodeHTML($sale->invoice_no ?? (string)$sale->id, 'C128', 1, 35) !!}
       </div>
       <div class="barcode-num">{{ $sale->invoice_no ?? $sale->id }}</div>
-
-      @if(!empty($fbrInvoiceNumber))
-      <div class="fbr-box-wrapper">
-        <div class="fbr-box-title">
-          FBR Invoice No : <span class="fbr-box-num">{{ $fbrInvoiceNumber }}</span>
-        </div>
-        <div class="fbr-box-badges">
-          @if(!empty($fbrQrBase64))
-            <img src="{{ $fbrQrBase64 }}" alt="FBR QR Code" class="fbr-qr-img">
-          @endif
-          @if(!empty($fbrLogoSrc))
-            <img src="{{ $fbrLogoSrc }}" alt="FBR Digital Invoicing System" class="fbr-badge-img">
-          @endif
-        </div>
-      </div>
-      @endif
     </div>
   </div>
 
@@ -437,6 +422,25 @@ if (!empty($fbrInvoiceNumber)) {
       <div class="approval-line"></div>
     </div>
   </div>
+
+  <!-- FBR DIGITAL INVOICING FOOTER -->
+  @if(!empty($fbrInvoiceNumber))
+  <div class="fbr-footer-wrap">
+    <div class="fbr-box-wrapper">
+      <div class="fbr-box-title">
+        FBR Invoice No : <span class="fbr-box-num">{{ $fbrInvoiceNumber }}</span>
+      </div>
+      <div class="fbr-box-badges">
+        @if(!empty($fbrQrBase64))
+          <img src="{{ $fbrQrBase64 }}" alt="FBR QR Code" class="fbr-qr-img">
+        @endif
+        @if(!empty($fbrLogoSrc))
+          <img src="{{ $fbrLogoSrc }}" alt="FBR Digital Invoicing System" class="fbr-badge-img">
+        @endif
+      </div>
+    </div>
+  </div>
+  @endif
 
 </div>
 
