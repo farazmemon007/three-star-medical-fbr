@@ -1,3 +1,24 @@
+@php
+$fbrLogoPath = public_path('assets/images/fbr_logo.png');
+$fbrLogoSrc = file_exists($fbrLogoPath)
+    ? 'data:image/png;base64,' . base64_encode(file_get_contents($fbrLogoPath))
+    : asset('assets/images/fbr_logo.png');
+
+$fbrInvoiceNumber = !empty($sale->fbr_invoice_no)
+    ? trim($sale->fbr_invoice_no)
+    : (!empty($sale->fbr_qr_code) ? trim($sale->fbr_qr_code) : null);
+
+$fbrQrBase64 = null;
+if (!empty($fbrInvoiceNumber)) {
+    try {
+        $dns2d = new \Milon\Barcode\DNS2D();
+        $dns2d->setStorPath(storage_path('framework/cache'));
+        $fbrQrBase64 = 'data:image/png;base64,' . $dns2d->getBarcodePNG($fbrInvoiceNumber, 'QRCODE', 4, 4);
+    } catch (\Throwable $e) {
+        $fbrQrBase64 = null;
+    }
+}
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 
@@ -281,6 +302,23 @@
             <span>{{ number_format(abs($finalBalance), 2) }} {{ $finalBalance >= 0 ? 'Dr' : 'Cr' }}</span>
         </div>
     </div>
+
+    @if(!empty($fbrInvoiceNumber))
+    <div class="divider"></div>
+    <div style="text-align: center; margin: 8px 0 6px 0;">
+        <div style="font-size: 8.5px; font-weight: bold; margin-bottom: 4px; word-break: break-all;">
+            FBR Invoice No : {{ $fbrInvoiceNumber }}
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            @if(!empty($fbrQrBase64))
+                <img src="{{ $fbrQrBase64 }}" alt="FBR QR Code" style="width: 62px; height: 62px; display: inline-block; image-rendering: pixelated;">
+            @endif
+            @if(!empty($fbrLogoSrc))
+                <img src="{{ $fbrLogoSrc }}" alt="FBR Digital Invoicing System" style="height: 62px; width: auto; max-width: 76px; object-fit: contain; display: inline-block;">
+            @endif
+        </div>
+    </div>
+    @endif
 
     <div class="divider"></div>
 

@@ -31,6 +31,26 @@ $logoPath = public_path('assets/images/three_star_logo.jpg');
 $logoSrc = file_exists($logoPath)
     ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath))
     : asset('assets/images/three_star_logo.jpg');
+
+$fbrLogoPath = public_path('assets/images/fbr_logo.png');
+$fbrLogoSrc = file_exists($fbrLogoPath)
+    ? 'data:image/png;base64,' . base64_encode(file_get_contents($fbrLogoPath))
+    : asset('assets/images/fbr_logo.png');
+
+$fbrInvoiceNumber = !empty($sale->fbr_invoice_no)
+    ? trim($sale->fbr_invoice_no)
+    : (!empty($sale->fbr_qr_code) ? trim($sale->fbr_qr_code) : null);
+
+$fbrQrBase64 = null;
+if (!empty($fbrInvoiceNumber)) {
+    try {
+        $dns2d = new \Milon\Barcode\DNS2D();
+        $dns2d->setStorPath(storage_path('framework/cache'));
+        $fbrQrBase64 = 'data:image/png;base64,' . $dns2d->getBarcodePNG($fbrInvoiceNumber, 'QRCODE', 4, 4);
+    } catch (\Throwable $e) {
+        $fbrQrBase64 = null;
+    }
+}
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -68,8 +88,14 @@ $logoSrc = file_exists($logoPath)
   .party-block { font-size: 10.5px; line-height: 1.85; flex: 1; }
   .prow { display: flex; gap: 4px; }
   .plbl { font-weight: bold; min-width: 68px; }
-  .barcode-right { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 2px; }
-  .barcode-num { font-size: 8.5px; letter-spacing: 0.5px; text-align: center; margin-top: 1px; font-weight: bold; }
+  .barcode-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-start; padding-top: 2px; }
+  .barcode-num { font-size: 8.5px; letter-spacing: 0.5px; text-align: center; margin-top: 1px; font-weight: bold; width: 100%; }
+  .fbr-box-wrapper { margin-top: 6px; text-align: left; }
+  .fbr-box-title { font-size: 9.5px; font-weight: bold; color: #000; margin-bottom: 3px; white-space: nowrap; letter-spacing: 0.2px; }
+  .fbr-box-num { font-size: 9.5px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; margin-left: 6px; }
+  .fbr-box-badges { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
+  .fbr-qr-img { width: 70px; height: 70px; display: block; image-rendering: pixelated; }
+  .fbr-badge-img { height: 70px; width: auto; max-width: 86px; object-fit: contain; display: block; }
 
   .meta-strip { display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; border-top: 1px solid #555; border-bottom: 1px solid #555; padding: 3px 3px; margin-bottom: 0; }
 
@@ -183,13 +209,19 @@ $logoSrc = file_exists($logoPath)
       </div>
       <div class="barcode-num">{{ $sale->invoice_no ?? $sale->id }}</div>
 
-      @if($sale->fbr_status === 'posted')
-      <div style="margin-top: 5px; border: 1.5px solid #059669; border-radius: 4px; padding: 3px 6px; text-align: center; background: #f0fdf4; width: 145px;">
-        <div style="font-size: 7.5px; font-weight: 800; color: #059669; letter-spacing: 0.5px;">✓ FBR DIGITAL INVOICE</div>
-        <div style="font-size: 8px; font-family: monospace; font-weight: bold; color: #1e293b; word-break: break-all;">{{ $sale->fbr_invoice_no }}</div>
-        @if($sale->fbr_posted_at)
-        <div style="font-size: 7px; color: #475569; margin-top: 1px;">{{ date('d-M-Y H:i', strtotime($sale->fbr_posted_at)) }}</div>
-        @endif
+      @if(!empty($fbrInvoiceNumber))
+      <div class="fbr-box-wrapper">
+        <div class="fbr-box-title">
+          FBR Invoice No : <span class="fbr-box-num">{{ $fbrInvoiceNumber }}</span>
+        </div>
+        <div class="fbr-box-badges">
+          @if(!empty($fbrQrBase64))
+            <img src="{{ $fbrQrBase64 }}" alt="FBR QR Code" class="fbr-qr-img">
+          @endif
+          @if(!empty($fbrLogoSrc))
+            <img src="{{ $fbrLogoSrc }}" alt="FBR Digital Invoicing System" class="fbr-badge-img">
+          @endif
+        </div>
       </div>
       @endif
     </div>
