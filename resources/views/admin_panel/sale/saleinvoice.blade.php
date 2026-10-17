@@ -90,13 +90,13 @@ if (!empty($fbrInvoiceNumber)) {
   .plbl { font-weight: bold; min-width: 68px; }
   .barcode-right { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 2px; }
   .barcode-num { font-size: 8.5px; letter-spacing: 0.5px; text-align: center; margin-top: 1px; font-weight: bold; }
-  .fbr-footer-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
-  .fbr-box-wrapper { text-align: left; }
-  .fbr-box-title { font-size: 9.5px; font-weight: bold; color: #000; margin-bottom: 4px; white-space: nowrap; letter-spacing: 0.2px; }
+  .fbr-footer-wrap { margin-top: 18px; display: flex; justify-content: center; width: 100%; }
+  .fbr-box-wrapper { text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .fbr-box-title { font-size: 9.5px; font-weight: bold; color: #000; margin-bottom: 6px; white-space: nowrap; letter-spacing: 0.2px; text-align: center; }
   .fbr-box-num { font-size: 9.5px; font-weight: bold; font-family: Arial, sans-serif; margin-left: 6px; }
-  .fbr-box-badges { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
-  .fbr-qr-img { width: 70px; height: 70px; display: block; image-rendering: pixelated; }
-  .fbr-badge-img { height: 70px; width: auto; max-width: 86px; object-fit: contain; display: block; }
+  .fbr-box-badges { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .fbr-qr-img { width: 72px; height: 72px; display: block; image-rendering: pixelated; }
+  .fbr-badge-img { height: 72px; width: auto; max-width: 90px; object-fit: contain; display: block; }
 
   .meta-strip { display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; border-top: 1px solid #555; border-bottom: 1px solid #555; padding: 3px 3px; margin-bottom: 0; }
 
