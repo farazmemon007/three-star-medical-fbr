@@ -1382,8 +1382,9 @@ class SaleController extends Controller
                 $advTaxVal = (float) ($request->adv_tax[$index] ?? 0);
                 $advTaxType = $request->adv_tax_type[$index] ?? 'percent';
 
-                // Calculate Line Subtotal (after item discount)
-                $subTotal = (float) ($totalPieces * $dbPrice);
+                // Calculate Line Subtotal (after item discount) - Box Qty * Price
+                $billableQty = $boxes + ($ppb > 0 ? ($loose / $ppb) : 0);
+                $subTotal = (float) ($billableQty * $dbPrice);
                 $calcDiscountAmount = 0;
                 $calcDiscountPercent = 0;
 
@@ -1841,7 +1842,7 @@ class SaleController extends Controller
                     : (($item->product->unit->name ?? '') ?: ($item->uom_name ?? 'Piece')),
                 'lot_number' => $firstBatch->batch_number ?? '-',
                 'exp_date' => $firstBatch && $firstBatch->exp_date ? $firstBatch->exp_date->format('d/m/Y') : '-',
-                'qty' => (int) $item->total_pieces,
+                'qty' => (float) ($item->qty > 0 ? $item->qty : ($item->total_pieces > 0 ? $item->total_pieces : 1)),
                 'qty_box' => (float) $item->qty,
                 'total_pieces' => (int) $item->total_pieces,
                 'loose_pieces' => (int) $item->loose_pieces,

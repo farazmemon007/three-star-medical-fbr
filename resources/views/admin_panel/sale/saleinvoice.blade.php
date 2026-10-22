@@ -250,7 +250,7 @@ if (!empty($fbrInvoiceNumber)) {
     <tbody>
       @foreach($saleItems as $index => $item)
       @php
-        $qty = (float)($item['total_pieces'] > 0 ? $item['total_pieces'] : ($item['qty'] > 0 ? $item['qty'] : 1));
+        $qty = (float)(!empty($item['qty_box']) && $item['qty_box'] > 0 ? $item['qty_box'] : (!empty($item['qty']) && $item['qty'] > 0 ? $item['qty'] : ($item['total_pieces'] ?? 1)));
         $rate = (float)($item['price'] ?? 0);
         $lineSubtotal = round($qty * $rate, 2);
         $disc = (float)($item['discount_amount'] ?? 0);

@@ -623,7 +623,7 @@
                                             <th style="min-width:100px" class="text-end">Box Qty</th>
                                             <th style="min-width:80px" class="text-end">Loose</th>
                                             <th style="min-width:90px" class="text-end">Free Pcs</th>
-                                            <th style="min-width:120px" class="text-end">Rate/PC</th>
+                                            <th style="min-width:120px" class="text-end">Rate</th>
                                             <th style="min-width:180px" class="text-end">Discount</th>
                                             <th style="min-width:150px" class="text-end">Sub Total</th>
                                             <th style="min-width:130px" class="text-end">GST %</th>
@@ -959,7 +959,8 @@
                 $row.data('total-pieces', total_pieces);
                 $row.data('total-free-pieces', total_free_pieces);
 
-                let line_gross = total_pieces * price;
+                let billableQty = boxes + (pack > 0 ? (loose / pack) : 0);
+                let line_gross = billableQty * price;
                 let line_disc = (discType === 'percent') ? (line_gross * discVal / 100) : discVal;
                 let subTotal = Math.max(0, line_gross - line_disc);
 
@@ -996,7 +997,8 @@
                     const discVal = num($r.find('.item_disc').val());
                     const discType = $r.find('.item-disc-type').val() || 'amount';
 
-                    let rowGross = total_pieces * price;
+                    let billableQty = boxes + (pack > 0 ? (loose / pack) : 0);
+                    let rowGross = billableQty * price;
                     let rowDisc = (discType === 'percent') ? (rowGross * discVal / 100) : discVal;
                     let sub = num($r.find('.row-sub-total').val());
 
