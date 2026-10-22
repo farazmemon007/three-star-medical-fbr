@@ -57,7 +57,7 @@ if (!empty($fbrInvoiceNumber)) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sales Invoice - {{ $sale->invoice_no ?? $sale->id }}</title>
+<title>Sales Tax Invoice - {{ $sale->invoice_no ?? $sale->id }}</title>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -182,7 +182,7 @@ if (!empty($fbrInvoiceNumber)) {
   </div>
 
   <!-- TITLE -->
-  <div class="doc-title">Sales Invoice</div>
+  <div class="doc-title">Sales Tax Invoice</div>
 
   <!-- PARTY + BARCODE -->
   <div class="party-meta">
@@ -190,6 +190,7 @@ if (!empty($fbrInvoiceNumber)) {
       <div class="prow"><span class="plbl">To :</span><span><strong>{{ optional($sale->customer_relation)->customer_name ?? 'WALKING CUSTOMER' }}</strong></span></div>
       <div class="prow"><span class="plbl">Address :</span><span>{{ optional($sale->customer_relation)->address ?? '-' }}</span></div>
       <div class="prow"><span class="plbl">Contact :</span><span>{{ optional($sale->customer_relation)->mobile ?? optional($sale->customer_relation)->phone ?? '-' }}</span></div>
+      <div class="prow"><span class="plbl">NTN No :</span><span>{{ trim(optional($sale->customer_relation)->ntn_no ?? '') !== '' ? optional($sale->customer_relation)->ntn_no : '-' }}</span></div>
       @if($officerName)
       <div class="prow"><span class="plbl">Sales Officer :</span><span>{{ $officerName }}</span></div>
       @endif
@@ -318,53 +319,19 @@ if (!empty($fbrInvoiceNumber)) {
     </tbody>
   </table>
 
-  <!-- BOTTOM: REMARKS + IN WORDS -->
+  <!-- BOTTOM: IN WORDS -->
   <div class="bottom-section" style="border: 1px solid #000; border-top: none;">
     <div class="left-bottom" style="width: 100%; border-right: none;">
-      <div class="remarks-row" style="padding: 4px 8px; font-size: 10.5px; font-weight: bold; border-bottom: 0.5px solid #ddd; min-height: 22px;">
-        <span style="color:#d00;">Remarks :</span>
-        <span>{{ $sale->return_note ?? $sale->remarks ?? '-' }}</span>
-      </div>
-      <div class="inwords-row" style="padding: 4px 8px; font-size: 10.5px; display: flex; gap: 4px; flex-wrap: wrap;">
+      <div class="inwords-row" style="padding: 6px 8px; font-size: 10.5px; display: flex; gap: 4px; flex-wrap: wrap;">
         <strong>In Words :</strong>
         <span>{{ !empty($sale->total_amount_Words) ? $sale->total_amount_Words : numberToWords($sale->total_net) }}</span>
       </div>
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <div class="footer-dates" style="margin-top:10px;">
-    <div>
-      <div><strong>Created By :</strong> &nbsp;{{ auth()->user()->name ?? 'Admin' }}</div>
-      <div><strong>Date Created :</strong> &nbsp;{{ $sale->created_at->format('d/m/Y H:i') }}</div>
-    </div>
-    @if($officerName)
-    <div>
-      <div><strong>Sales Officer :</strong> &nbsp;{{ $officerName }}</div>
-    </div>
-    @endif
-    @if($sale->credit_days)
-    <div>
-      <div><strong>Credit Days :</strong> &nbsp;{{ $sale->credit_days }}</div>
-      <div><strong>Due Date :</strong> &nbsp;{{ \Carbon\Carbon::parse($sale->sale_date ?? $sale->created_at)->addDays($sale->credit_days)->format('d/m/Y') }}</div>
-    </div>
-    @endif
-  </div>
-
-  <!-- APPROVAL ROW -->
-  <div class="approval-row">
-    <div class="approval-field">
-      <span><strong>Approved By :</strong></span>
-      <div class="approval-line"></div>
-    </div>
-    <div class="approval-field">
-      <span><strong>Checked & Received By :</strong></span>
-      <div class="approval-line"></div>
-    </div>
-    <div class="approval-field">
-      <span><strong>Authorized Signature :</strong></span>
-      <div class="approval-line"></div>
-    </div>
+  <!-- SYSTEM GENERATED NOTE -->
+  <div style="margin-top: 10px; font-size: 10px; font-style: italic; color: #333;">
+    This is system generated invoice
   </div>
 
   <!-- FBR DIGITAL INVOICING FOOTER -->
