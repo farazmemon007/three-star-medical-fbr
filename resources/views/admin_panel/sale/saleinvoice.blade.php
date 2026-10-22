@@ -100,10 +100,11 @@ if (!empty($fbrInvoiceNumber)) {
 
   .meta-strip { display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; border-top: 1px solid #555; border-bottom: 1px solid #555; padding: 3px 3px; margin-bottom: 0; }
 
-  table.items { width: 100%; border-collapse: collapse; font-size: 10px; }
-  table.items th { background: #e0e0e0; border: 0.5px solid #888; padding: 3px 4px; text-align: center; font-weight: bold; }
+  table.items { width: 100%; border-collapse: collapse; font-size: 10px; border: 1px solid #000; margin-top: 4px; }
+  table.items th { background: #b8b8b8; border: 1px solid #000; padding: 5px 3px; text-align: center; font-weight: bold; color: #000; font-size: 10px; line-height: 1.2; }
   table.items th.la { text-align: left; }
-  table.items td { border: 0.5px solid #ccc; padding: 2.5px 4px; }
+  table.items th.ra { text-align: right; }
+  table.items td { border: 1px solid #000; padding: 4px 4px; color: #000; vertical-align: middle; }
   table.items td.c { text-align: center; }
   table.items td.r { text-align: right; }
 
@@ -221,170 +222,114 @@ if (!empty($fbrInvoiceNumber)) {
 
   <!-- ITEMS TABLE -->
   @php 
-    $hasGst = ((float)($sale->total_gst ?? 0) > 0);
-    $showHsCode = (bool)($sale->enable_hs_code ?? false);
-    $grandPieces = 0; $grandGst = 0; $grandDiscount = 0; $grandBox = 0; $grandPackPieces = 0;
-    $grandFree = 0;
+    $grandQty = 0;
+    $grandValExcl = 0;
+    $grandSalesTax = 0;
+    $grandFTax = 0;
+    $grandValIncl = 0;
+    $grandDiscount = 0;
   @endphp
   <table class="items">
     <thead>
       <tr>
-        <th style="width:24px;">SR#</th>
-        <th class="la">Item Description</th>
-        @if($showHsCode)
-        <th style="width:60px;">HS Code</th>
-        @endif
-        <th style="width:55px;">Packing</th>
-        <th style="width:65px;">Expiry</th>
-        <th style="width:60px;">Lot #</th>
-        <th style="width:44px;">Qty</th>
-        <th style="width:40px;">Free</th>
-        <th style="width:68px;">Rate/Pc</th>
-        <th style="width:56px;">Disc</th>
-        @if($hasGst)
-        <th style="width:40px;">GST%</th>
-        <th style="width:52px;">GST Amt</th>
-        @endif
-        <th style="width:70px;">Net Total</th>
+        <th style="width:4%;">Sr#</th>
+        <th class="la" style="width:20%;">Description</th>
+        <th style="width:9%;">HS Code</th>
+        <th style="width:6%;">Uom</th>
+        <th class="ra" style="width:6%;">Qty</th>
+        <th class="ra" style="width:7%;">Rate</th>
+        <th class="ra" style="width:11%;">Value Excluding</th>
+        <th style="width:7%;">GST Rate</th>
+        <th class="ra" style="width:9%;">Sales Tax</th>
+        <th style="width:6%;">F.Tax Rate</th>
+        <th class="ra" style="width:6%;">F.Tax Value</th>
+        <th class="ra" style="width:9%;">Value Including</th>
       </tr>
     </thead>
     <tbody>
       @foreach($saleItems as $index => $item)
       @php
-        $piecesPerBox = max(1, (int)($item['uom_factor'] ?? $item['pieces_per_box'] ?? 1));
-        $totalPcs     = (int)($item['total_pieces'] ?? 0);
-        $grandPieces += $totalPcs;
-        $grandDiscount += (float)($item['discount_amount'] ?? 0);
-        $grandBox += floor($totalPcs / $piecesPerBox);
-        $grandPackPieces += ($totalPcs % $piecesPerBox);
-        $grandFree   += (int)($item['free_total_pieces'] ?? 0);
-        
-        // B.P notation
-        if ($piecesPerBox > 1) {
-            $boxes = floor($totalPcs / $piecesPerBox);
-            $loose = $totalPcs % $piecesPerBox;
-            $qtyDisp = $loose > 0 ? "$boxes.$loose" : $boxes;
-        } else {
-            $qtyDisp = $totalPcs;
-        }
-        // Free B.P
-        $freePcs = (int)($item['free_total_pieces'] ?? 0);
-        if ($piecesPerBox > 1 && $freePcs > 0) {
-            $fb = floor($freePcs / $piecesPerBox); $fl = $freePcs % $piecesPerBox;
-            $freeDisp = $fl > 0 ? "$fb.$fl" : $fb;
-        } else {
-            $freeDisp = $freePcs > 0 ? $freePcs : '-';
-        }
-        // GST per item — try to read directly; fall back to calculating from total
-        $gstPct = $item['gst_percent'] ?? $item['gst'] ?? 0;
-        $gstAmt = $item['gst_amount'] ?? 0;
+        $qty = (float)($item['total_pieces'] > 0 ? $item['total_pieces'] : ($item['qty'] > 0 ? $item['qty'] : 1));
+        $rate = (float)($item['price'] ?? 0);
+        $lineSubtotal = round($qty * $rate, 2);
+        $disc = (float)($item['discount_amount'] ?? 0);
+        $valExcl = max(0, round($lineSubtotal - $disc, 2));
+
+        $gstPct = (float)($item['gst_percent'] ?? $item['gst'] ?? 0);
+        $gstAmt = (float)($item['gst_amount'] ?? 0);
         if ($gstAmt == 0 && $gstPct > 0) {
-            $sub = $item['total'] - ($item['discount_amount'] ?? 0);
-            $gstAmt = $sub * $gstPct / 100;
+            $gstAmt = round($valExcl * ($gstPct / 100), 2);
         }
+        // Fallback if item level GST wasn't stored but sale has total GST
+        if ($gstPct == 0 && $gstAmt == 0 && (float)($sale->total_gst ?? 0) > 0 && (float)($sale->total_bill_amount ?? 0) > 0) {
+            $effectiveRate = round(((float)$sale->total_gst / (float)$sale->total_bill_amount) * 100, 1);
+            $gstPct = $effectiveRate;
+            $gstAmt = round($valExcl * ($gstPct / 100), 2);
+        }
+
+        $fTaxPct = (float)($item['further_tax_rate'] ?? 0);
+        $fTaxAmt = (float)($item['further_tax_amount'] ?? 0);
+        if ($fTaxAmt == 0 && $fTaxPct > 0) {
+            $fTaxAmt = round($valExcl * ($fTaxPct / 100), 2);
+        }
+
+        $valIncl = round($valExcl + $gstAmt + $fTaxAmt, 2);
+
+        $grandQty += $qty;
+        $grandValExcl += $valExcl;
+        $grandSalesTax += $gstAmt;
+        $grandFTax += $fTaxAmt;
+        $grandValIncl += $valIncl;
+        $grandDiscount += $disc;
+
+        $uomDisp = (!empty($item['uom_name']) && $item['uom_name'] !== '-') 
+            ? $item['uom_name'] 
+            : (($item['unit'] ?? '') ?: 'Piece');
       @endphp
+      <tr>
         <td class="c">{{ $index + 1 }}</td>
         <td>
           <strong>{{ $item['item_name'] }}</strong>
           @if(!empty($item['item_code'])) <br><small style="color:#666;">Code: {{ $item['item_code'] }}</small> @endif
         </td>
-        @if($showHsCode)
-        <td class="c">{{ $item['hs_code'] ?? '-' }}</td>
-        @endif
-        <td class="c">{{ ($item['uom_name'] ?? '') ?: ($piecesPerBox > 1 ? '1X'.$piecesPerBox : (($item['unit'] ?? '') ?: 'Piece')) }}</td>
-        <td class="c">{{ $item['exp_date'] ?? '-' }}</td>
-        <td class="c">{{ $item['lot_number'] ?? '-' }}</td>
-        <td class="c"><strong>{{ $qtyDisp }}</strong></td>
-        <td class="c">{{ $freeDisp }}</td>
-        <td class="r">{{ number_format($item['price'], 2) }}</td>
-        <td class="r">{{ $item['discount_amount'] > 0 ? number_format($item['discount_amount'], 2) : '—' }}</td>
-        @if($hasGst)
-        <td class="c">{{ $gstPct > 0 ? number_format($gstPct, 1).'%' : '—' }}</td>
-        <td class="r">{{ $gstAmt > 0 ? number_format($gstAmt, 2) : '—' }}</td>
-        @endif
-        <td class="r"><strong>{{ number_format($item['total'], 2) }}</strong></td>
+        <td class="c">{{ !empty($item['hs_code']) ? $item['hs_code'] : '-' }}</td>
+        <td class="c">{{ $uomDisp }}</td>
+        <td class="r"><strong>{{ rtrim(rtrim(number_format($qty, 2), '0'), '.') }}</strong></td>
+        <td class="r">{{ number_format($rate, 2) }}</td>
+        <td class="r"><strong>{{ number_format($valExcl, 2) }}</strong></td>
+        <td class="c">{{ $gstPct > 0 ? rtrim(rtrim(number_format($gstPct, 2), '0'), '.') . '%' : '0%' }}</td>
+        <td class="r">{{ $gstAmt > 0 ? number_format($gstAmt, 2) : '0.00' }}</td>
+        <td class="c">{{ $fTaxPct > 0 ? rtrim(rtrim(number_format($fTaxPct, 2), '0'), '.') . '%' : '' }}</td>
+        <td class="r">{{ $fTaxAmt > 0 ? number_format($fTaxAmt, 2) : '' }}</td>
+        <td class="r"><strong>{{ number_format($valIncl, 2) }}</strong></td>
       </tr>
       @endforeach
-      <!-- Grand Row -->
-      <tr style="background:#f4f4f4; font-weight:bold;">
-        <td colspan="{{ $showHsCode ? 6 : 5 }}" class="r" style="font-size:9.5px;color:#555;">Total Items: {{ count($saleItems) }}</td>
-        <td class="c">
-          {{ $grandPackPieces > 0 ? "$grandBox.$grandPackPieces" : $grandBox }} <small>B.P</small>
-        </td>
-        <td class="c">{{ $grandFree > 0 ? $grandFree : '—' }}</td>
-        @if($hasGst)
-        <td colspan="5"></td>
-        @else
-        <td colspan="3"></td>
-        @endif
-        <td class="r" style="font-size:11px;">{{ number_format($sale->items->sum('line_total'), 2) }}</td>
+      <!-- Grand Total Row -->
+      <tr style="background:#e8e8e8; font-weight:bold; border-top:1.5px solid #000;">
+        <td colspan="4" class="r" style="font-size:10px; padding:5px 6px;">Total Items: {{ count($saleItems) }}</td>
+        <td class="r" style="font-weight:bold; font-size:10.5px;">{{ rtrim(rtrim(number_format($grandQty, 2), '0'), '.') }}</td>
+        <td></td>
+        <td class="r" style="font-weight:bold; font-size:10.5px;">{{ number_format($grandValExcl, 2) }}</td>
+        <td></td>
+        <td class="r" style="font-weight:bold; font-size:10.5px;">{{ number_format($grandSalesTax, 2) }}</td>
+        <td></td>
+        <td class="r" style="font-weight:bold; font-size:10.5px;">{{ $grandFTax > 0 ? number_format($grandFTax, 2) : '' }}</td>
+        <td class="r" style="font-weight:bold; font-size:11px;">{{ number_format($grandValIncl, 2) }}</td>
       </tr>
     </tbody>
   </table>
 
-  <!-- BOTTOM: REMARKS + TOTALS -->
-  @php
-    $amountPaid = (float)($sale->cash ?? 0);
-    $closingBalance = $previousBalance + (float)$sale->total_net - $amountPaid;
-  @endphp
-  <div class="bottom-section">
-    <div class="left-bottom">
-      <div class="remarks-row">
+  <!-- BOTTOM: REMARKS + IN WORDS -->
+  <div class="bottom-section" style="border: 1px solid #000; border-top: none;">
+    <div class="left-bottom" style="width: 100%; border-right: none;">
+      <div class="remarks-row" style="padding: 4px 8px; font-size: 10.5px; font-weight: bold; border-bottom: 0.5px solid #ddd; min-height: 22px;">
         <span style="color:#d00;">Remarks :</span>
         <span>{{ $sale->return_note ?? $sale->remarks ?? '-' }}</span>
       </div>
-      <div class="inwords-row">
+      <div class="inwords-row" style="padding: 4px 8px; font-size: 10.5px; display: flex; gap: 4px; flex-wrap: wrap;">
         <strong>In Words :</strong>
         <span>{{ !empty($sale->total_amount_Words) ? $sale->total_amount_Words : numberToWords($sale->total_net) }}</span>
       </div>
-    </div>
-    <div class="right-totals">
-      <table class="totals-table">
-        <tr>
-          <td class="lbl">Sub Total :</td>
-          <td class="val">{{ number_format((float)$sale->total_bill_amount + $grandDiscount, 2) }}</td>
-          @if($hasGst)
-          <td class="lbl" style="padding-left:20px;">Total GST :</td>
-          <td class="val">{{ number_format($sale->total_gst ?? 0, 2) }}</td>
-          @else
-          <td colspan="2"></td>
-          @endif
-        </tr>
-        <tr>
-          <td class="lbl">Product Discount :</td>
-          <td class="val" style="color:#c0392b;">{{ $grandDiscount > 0 ? '- ' : '' }}{{ number_format($grandDiscount, 2) }}</td>
-          <td class="lbl" style="padding-left:20px;">Bill Discount :</td>
-          <td class="val" style="color:#c0392b;">{{ (float)($sale->total_extradiscount ?? 0) > 0 ? '- ' : '' }}{{ number_format($sale->total_extradiscount ?? 0, 2) }}</td>
-        </tr>
-        <tr>
-          <td class="lbl">Freight Charges :</td>
-          <td class="val">{{ number_format($sale->total_freight ?? 0, 2) }}</td>
-          <td class="lbl" style="padding-left:20px;">Bilti Expenses :</td>
-          <td class="val">{{ number_format($sale->expense ?? $sale->total_expense ?? 0, 2) }}</td>
-        </tr>
-        @if((float)($sale->total_inc_tax ?? 0) > 0 || (float)($sale->total_adv_tax ?? 0) > 0)
-        <tr>
-          <td class="lbl">Inc Tax :</td>
-          <td class="val">{{ number_format($sale->total_inc_tax ?? 0, 2) }}</td>
-          <td class="lbl" style="padding-left:20px;">Adv Tax :</td>
-          <td class="val">{{ number_format($sale->total_adv_tax ?? 0, 2) }}</td>
-        </tr>
-        @endif
-        <tr class="divider">
-          <td class="lbl">BF Balance :</td>
-          <td class="val">{{ number_format($previousBalance, 2) }}</td>
-          <td class="lbl" style="padding-left:20px;">Amount Paid :</td>
-          <td class="val" style="color:#27ae60;">{{ number_format($amountPaid, 2) }}</td>
-        </tr>
-        <tr class="divider">
-          <td class="lbl" style="font-size:11px;"><strong>Net Payable :</strong></td>
-          <td class="val"><strong>{{ number_format($sale->total_net, 2) }}</strong></td>
-          <td class="lbl" style="padding-left:20px; font-size:11px;"><strong>Balance :</strong></td>
-          <td class="val" style="font-weight:bold; {{ $closingBalance > 0 ? 'color:#c0392b;' : 'color:#27ae60;' }}">
-            {{ number_format($closingBalance, 2) }}
-          </td>
-        </tr>
-      </table>
     </div>
   </div>
 

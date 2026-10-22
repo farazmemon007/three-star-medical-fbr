@@ -803,6 +803,16 @@
                         <div class="erp-card-body pt-0">
                             <!-- Table -->
                             <div class="erp-table-wrapper" style="overflow-x: auto;">
+                                @php
+                                    $allUnits = \App\Models\Unit::pluck('name')->toArray();
+                                    $defaultUoms = ['KG', 'Piece', 'Number', 'Pack', 'Box', 'Carton', 'Dozen', 'Meter', 'Liter', 'Pair', 'Set', 'Roll', 'Bag', 'Bottle', 'Vial', 'Kit'];
+                                    $uomList = array_unique(array_merge($defaultUoms, $allUnits));
+                                @endphp
+                                <datalist id="uom_datalist">
+                                    @foreach($uomList as $uName)
+                                        <option value="{{ $uName }}">
+                                    @endforeach
+                                </datalist>
                                 <table class="erp-table">
                                     <thead>
                                         <tr>
@@ -810,6 +820,7 @@
                                             <th style="width:300px">Product</th>
                                             <th style="width:120px" class="hs-code-col">HS Code</th>
                                             <th style="width:140px">Packing</th>
+                                            <th style="width:100px" class="text-center">UOM</th>
                                             <th style="width:80px" class="text-center">Packet</th>
                                             <th style="min-width:100px" class="text-end">Box Qty</th>
                                             <th style="min-width:80px" class="text-end">Loose</th>
@@ -1819,6 +1830,10 @@
             $row.find('.item-name').val(p.item_name || '');
             $row.find('.hs-code').val(p.hs_code || '');
             $row.find('.size-mode').val(p.size_mode || 'by_cartons');
+
+            // Auto set UOM from product unit or uom_name
+            let uomVal = (p.unit && p.unit.name) ? p.unit.name : (p.uom_name || 'Piece');
+            $row.find('.uom-input').val(uomVal);
             console.log(p);
             
             // Set price from product data if not already set or if it's a new product
@@ -2172,6 +2187,9 @@
                     <input type="hidden" name="uom_id[]" class="uom-id">
                     <input type="hidden" name="item_uom_factor[]" class="item_uom_factor" value="1">
                     <input type="hidden" name="size_mode[]" class="size-mode" value="by_cartons">
+                </td>
+                <td>
+                    <input type="text" name="item_uom[]" list="uom_datalist" class="form-control text-center uom-input row-input" style="min-width:85px;" placeholder="e.g. KG, Piece" value="Piece">
                 </td>
                 <td class="text-center">
                     <input type="number" name="pcs_per_box_display[]" class="form-control text-center item-uom" value="1" readonly style="width:60px; background:#f8fafc;"
@@ -2611,6 +2629,10 @@
 
                     if (item.lot_number || item.lot_no || item.batch_no) {
                         $lastRow.find('.lot-no-display').val(item.lot_number || item.lot_no || item.batch_no);
+                    }
+
+                    if (item.uom_name) {
+                        $lastRow.find('.uom-input').val(item.uom_name);
                     }
 
                     let wh_id = item.warehouse_id || defaultWhId;

@@ -1342,8 +1342,14 @@ class SaleController extends Controller
                 $uomIdRaw = $request->uom_id[$index] ?? null;
                 $isNewUom = ($uomIdRaw === 'NEW' || ($request->is_new_uom[$index] ?? '0') === '1');
                 
-                // If it's a new UOM we get it from uom_name, otherwise use pieces_per_box[] (the select element)
-                $uomName = $isNewUom ? ($request->uom_name[$index] ?? $uomName) : ($packingNames[$index] ?? 'Piece');
+                // If user provided a manual/typed UOM (e.g. KG, Number, Piece), prioritize it
+                if (!empty($request->item_uom[$index])) {
+                    $uomName = trim($request->item_uom[$index]);
+                } elseif (!empty($request->uom[$index])) {
+                    $uomName = trim($request->uom[$index]);
+                } else {
+                    $uomName = $isNewUom ? ($request->uom_name[$index] ?? $uomName) : ($packingNames[$index] ?? 'Piece');
+                }
 
                 if ($isNewUom) {
                     $uom = \App\Models\ProductUom::create([
@@ -1828,11 +1834,10 @@ class SaleController extends Controller
                 'item_name' => ($item->product_name ?? $item->product->item_name ?? 'Item') . ' ' . ($item->product->brand->name ?? ''),
                 'item_code' => $item->product->item_code ?? '',
                 'brand' => $item->product->brand->name ?? '',
-                'unit' => $item->product->unit->name ?? '',
-                'uom_name' => (function() use ($item) {
-                    $factor = (int) ($item->uom_factor ?: (($item->total_pieces > 0 && (float)$item->qty > 0) ? round($item->total_pieces / (float)$item->qty) : 1));
-                    return ($factor > 1) ? '1x' . $factor : ($item->product->unit->name ?? 'Piece');
-                })(),
+                'unit' => $item->product->unit->name ?? 'Piece',
+                'uom_name' => (!empty($item->uom_name) && !str_starts_with($item->uom_name, '1x'))
+                    ? $item->uom_name 
+                    : (($item->product->unit->name ?? '') ?: ($item->uom_name ?? 'Piece')),
                 'lot_number' => $firstBatch->batch_number ?? '-',
                 'exp_date' => $firstBatch && $firstBatch->exp_date ? $firstBatch->exp_date->format('d/m/Y') : '-',
                 'qty' => (int) $item->total_pieces,
@@ -1847,9 +1852,13 @@ class SaleController extends Controller
                 'discount_percent' => (float) $item->discount_percent,
                 'discount_amount' => (float) $item->discount_amount,
                 'total' => (float) $item->total,
-                'gst' => (float) $item->gst,
-                'gst_percent' => (float) $item->gst,
-                'gst_amount' => (float) $item->gst_amount,
+                'gst' => (float) ($item->gst_percent ?? $item->gst ?? 0),
+                'gst_percent' => (float) ($item->gst_percent ?? $item->gst ?? 0),
+                'gst_amount' => (float) ($item->gst_amount ?? 0),
+                'inc_tax' => (float) ($item->inc_tax ?? 0),
+                'adv_tax' => (float) ($item->adv_tax ?? 0),
+                'further_tax_rate' => (float) ($item->further_tax_rate ?? $item->f_tax_rate ?? 0),
+                'further_tax_amount' => (float) ($item->further_tax_amount ?? $item->further_tax ?? $item->f_tax_value ?? 0),
                 'uom_factor' => (int) ($item->uom_factor ?: (($item->total_pieces > 0 && (float)$item->qty > 0) ? round($item->total_pieces / (float)$item->qty) : 1)),
                 'color' => json_decode($item->color, true) ?? [],
                 'pieces_per_box' => $item->product->pieces_per_box ?? 1,

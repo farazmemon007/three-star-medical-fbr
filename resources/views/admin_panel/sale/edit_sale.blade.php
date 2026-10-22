@@ -601,6 +601,16 @@
                         </div>
                         <div class="erp-card-body pt-0">
                             <div class="erp-table-wrapper" style="overflow-x: auto;">
+                                @php
+                                    $allUnits = \App\Models\Unit::pluck('name')->toArray();
+                                    $defaultUoms = ['KG', 'Piece', 'Number', 'Pack', 'Box', 'Carton', 'Dozen', 'Meter', 'Liter', 'Pair', 'Set', 'Roll', 'Bag', 'Bottle', 'Vial', 'Kit'];
+                                    $uomList = array_unique(array_merge($defaultUoms, $allUnits));
+                                @endphp
+                                <datalist id="uom_datalist">
+                                    @foreach($uomList as $uName)
+                                        <option value="{{ $uName }}">
+                                    @endforeach
+                                </datalist>
                                 <table class="erp-table">
                                     <thead>
                                         <tr>
@@ -608,6 +618,7 @@
                                             <th style="width:120px" class="hs-code-col">HS Code</th>
                                             <th style="min-width:320px">Product</th>
                                             <th style="min-width:150px">Packing</th>
+                                            <th style="width:100px" class="text-center">UOM</th>
                                             <th style="width:80px" class="text-center">Packet</th>
                                             <th style="min-width:100px" class="text-end">Box Qty</th>
                                             <th style="min-width:80px" class="text-end">Loose</th>
@@ -666,6 +677,9 @@
                                                     <input type="hidden" name="uom_id[]" class="uom-id" value="{{ $item->uom_id }}">
                                                     <input type="hidden" name="item_uom_factor[]" class="item_uom_factor" value="{{ $ppb }}">
                                                     <input type="hidden" name="size_mode[]" class="size-mode" value="{{ $sizeMode }}">
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="item_uom[]" list="uom_datalist" class="form-control text-center uom-input row-input" style="min-width:85px;" value="{{ $item->uom_name ?: ($item->product->unit->name ?? 'Piece') }}" placeholder="UOM">
                                                 </td>
                                                 <td class="text-center">
                                                     <input type="number" name="pcs_per_box_display[]" class="form-control text-center item-uom" value="{{ $ppb }}" readonly style="width:60px; background:#f8fafc;">
@@ -1034,6 +1048,7 @@
                         <td><select name="pieces_per_box[]" class="form-select packing-select row-input"><option value="">Select</option></select>
                             <input type="hidden" name="packing_id[]" class="packing-id"><input type="hidden" name="uom_id[]" class="uom-id">
                             <input type="hidden" name="item_uom_factor[]" class="item_uom_factor" value="1"><input type="hidden" name="size_mode[]" class="size-mode" value="by_cartons"></td>
+                        <td><input type="text" name="item_uom[]" list="uom_datalist" class="form-control text-center uom-input row-input" style="min-width:85px;" value="Piece" placeholder="UOM"></td>
                         <td><input type="number" name="pcs_per_box_display[]" class="form-control text-center item-uom" value="1" readonly style="width:60px;"></td>
                         <td><input type="number" name="qty[]" class="form-control quantity text-end fw-bold row-input" value="1"></td>
                         <td><input type="number" name="loose_pieces[]" class="form-control loose_pieces text-end row-input" value="0"></td>
@@ -1078,6 +1093,8 @@
                 $row.find('.item-name').val(data.item_name);
                 $row.find('.price').val(data.price || data.sale_price_per_piece || 0);
                 $row.find('.size-mode').val(data.size_mode || 'by_cartons');
+                let uomVal = (data.unit && data.unit.name) ? data.unit.name : (data.uom_name || 'Piece');
+                $row.find('.uom-input').val(uomVal);
 
                 // Update button UI
                 var $btn = $row.find('.product-select-btn');
