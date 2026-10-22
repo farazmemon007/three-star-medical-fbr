@@ -906,7 +906,7 @@ class SaleController extends Controller
 
     public function saleinvoice($id)
     {
-        $sale = Sale::with(['customer_relation.salesOfficer', 'items.batches', 'items.product.unit', 'items.product.brand'])->findOrFail($id);
+        $sale = Sale::with(['customer_relation.salesOfficer', 'items.batches', 'items.product.unit', 'items.product.brand', 'items.product.category_relation'])->findOrFail($id);
         $items = $this->_getSaleItems($sale);
 
         // Calculate Balances for Invoice
@@ -1831,6 +1831,7 @@ class SaleController extends Controller
             }
             return [
                 'product_id' => $item->product_id,
+                'category_name' => $item->product->category_relation->name ?? '',
                 'item_name' => ($item->product_name ?? $item->product->item_name ?? 'Item') . ' ' . ($item->product->brand->name ?? ''),
                 'item_code' => $item->product->item_code ?? '',
                 'brand' => $item->product->brand->name ?? '',

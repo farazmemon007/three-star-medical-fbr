@@ -289,8 +289,7 @@ if (!empty($fbrInvoiceNumber)) {
       <tr>
         <td class="c">{{ $index + 1 }}</td>
         <td>
-          <strong>{{ $item['item_name'] }}</strong>
-          @if(!empty($item['item_code'])) <br><small style="color:#666;">Code: {{ $item['item_code'] }}</small> @endif
+          <strong>{{ !empty($item['category_name']) ? $item['category_name'] : $item['item_name'] }}</strong>
         </td>
         <td class="c">{{ !empty($item['hs_code']) ? $item['hs_code'] : '-' }}</td>
         <td class="c">{{ $uomDisp }}</td>
