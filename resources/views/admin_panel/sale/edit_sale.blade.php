@@ -615,7 +615,7 @@
                                     <thead>
                                         <tr>
                                             <th style="width:120px">Item Code</th>
-                                            <th style="width:120px" class="hs-code-col">HS Code</th>
+                                            <th style="width:145px" class="hs-code-col text-center">HS Code</th>
                                             <th style="min-width:320px">Product</th>
                                             <th style="min-width:150px">Packing</th>
                                             <th style="width:100px" class="text-center">UOM</th>
@@ -659,7 +659,12 @@
                                                     <input type="text" name="item_code[]" class="form-control bg-transparent border-0 px-0 item-code" readonly value="{{ $prod->item_code }}">
                                                 </td>
                                                 <td class="hs-code-col">
-                                                    <input type="text" name="hs_code[]" class="form-control bg-transparent border-0 px-0 item-hs-code" readonly value="{{ $item->hs_code }}">
+                                                    <div class="input-group input-group-sm" style="min-width: 130px;">
+                                                        <input type="text" name="hs_code[]" class="form-control text-center hs-code item-hs-code" style="font-size:11px; padding:2px 4px; background:#fff;" value="{{ $item->hs_code }}" placeholder="HS Code">
+                                                        <button type="button" class="btn btn-outline-primary btn-quick-hs px-2" onclick="window.openQuickHsModalForBtn && window.openQuickHsModalForBtn(this)" title="Quick Update Product HS Code" style="padding: 2px 7px;">
+                                                            <i class="bi bi-plus-lg"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                                 <td style="font-weight:600; color:#334155;">
                                                     <input type="hidden" name="item_name[]" class="item-name" value="{{ $prod->item_name }}">
@@ -891,6 +896,7 @@
     @include('admin_panel.sale.sale_receipt_note.modals')
     @include('admin_panel.components.product_select_modal')
     @include('admin_panel.sale.components.fbr_post_modal')
+    @include('admin_panel.sale.components.quick_hs_modal')
 
 @endsection
 
@@ -899,6 +905,14 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
+            // Quick HS Code Button Click
+            $(document).on('click', '.btn-quick-hs', function(e) {
+                e.preventDefault();
+                if (window.openQuickHsModalForBtn) {
+                    window.openQuickHsModalForBtn(this);
+                }
+            });
+
             // Helper functions
             function num(n) { return isNaN(parseFloat(n)) ? 0 : parseFloat(n); }
 
@@ -1040,7 +1054,14 @@
                             <input type="hidden" name="warehouse_id[]" class="item-warehouse" value="1">
                             <input type="text" name="item_code[]" class="form-control bg-transparent border-0 px-0 item-code" readonly>
                         </td>
-                        <td class="hs-code-col"><input type="text" name="hs_code[]" class="form-control bg-transparent border-0 px-0 item-hs-code" readonly></td>
+                        <td class="hs-code-col">
+                            <div class="input-group input-group-sm" style="min-width: 130px;">
+                                <input type="text" name="hs_code[]" class="form-control text-center hs-code item-hs-code" style="font-size:11px; padding:2px 4px; background:#fff;" placeholder="HS Code">
+                                <button type="button" class="btn btn-outline-primary btn-quick-hs px-2" onclick="window.openQuickHsModalForBtn && window.openQuickHsModalForBtn(this)" title="Quick Update Product HS Code" style="padding: 2px 7px;">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                        </td>
                         <td style="font-weight:600;">
                             <input type="hidden" name="item_name[]" class="item-name">
                             <button type="button" class="product-select-btn">Select Product <span class="psm-btn-arrow">&#9660;</span></button>

@@ -1352,4 +1352,33 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Quick update HS Code for a product from Sale screen modal.
+     */
+    public function quickUpdateHsCode(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'hs_code'    => 'nullable|string|max:100',
+        ]);
+
+        try {
+            $product = Product::findOrFail($request->product_id);
+            $cleanHs = trim($request->hs_code ?? '');
+            $product->update(['hs_code' => $cleanHs]);
+
+            return response()->json([
+                'status'     => 'success',
+                'product_id' => $product->id,
+                'hs_code'    => $cleanHs,
+                'message'    => "HS Code for '{$product->item_name}' updated to '{$cleanHs}'",
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to update HS Code: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

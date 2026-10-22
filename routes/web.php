@@ -115,6 +115,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/create_prodcut', [ProductController::class, 'view_store'])->middleware('permission:products.create')->name('store');
     Route::post('/store-product', [ProductController::class, 'store_product'])->middleware('permission:products.create|products.edit')->name('store-product');
     Route::put('/product/update/{id}', [ProductController::class, 'update'])->middleware('permission:products.edit')->name('product.update');
+    Route::post('/product/quick-update-hs-code', [ProductController::class, 'quickUpdateHsCode'])->name('product.quick_update_hs_code');
     Route::post('/product/validate-form', [ProductController::class, 'validateForm'])->name('product.validate');
     Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->middleware('permission:products.edit')->name('products.edit');
     Route::get('/generate-barcode-image', [ProductController::class, 'generateBarcode'])->name('generate-barcode-image');
