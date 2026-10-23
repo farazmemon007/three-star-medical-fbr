@@ -205,10 +205,6 @@ if (!empty($fbrInvoiceNumber)) {
     <div class="party-block" style="text-align:right;">
       <div class="prow" style="justify-content:flex-end;"><span class="plbl">Invoice # :</span><span><strong>{{ $sale->invoice_no ?? $sale->id }}</strong></span></div>
       <div class="prow" style="justify-content:flex-end;"><span class="plbl">Sale Date :</span><span>{{ $sale->sale_date ? \Carbon\Carbon::parse($sale->sale_date)->format('d/m/Y') : $sale->created_at->format('d/m/Y') }}</span></div>
-      <div class="prow" style="justify-content:flex-end;"><span class="plbl">Posted :</span><span>{{ $sale->created_at->format('d/m/Y H:i') }}</span></div>
-      @if($sale->reference || $sale->sale_order_no)
-      <div class="prow" style="justify-content:flex-end;"><span class="plbl">Ref / SO # :</span><span>{{ $sale->reference ?? $sale->sale_order_no }}</span></div>
-      @endif
       @if($sale->order_no)
       <div class="prow" style="justify-content:flex-end;"><span class="plbl">Order # :</span><span>{{ $sale->order_no }}</span></div>
       @endif
