@@ -270,19 +270,44 @@ class ProductBatchController extends Controller
                     ->first();
 
                 if (!$batch) {
-                    throw \Illuminate\Validation\ValidationException::withMessages(['error' => "The selected batch could not be found."]);
+                    $batch = ProductBatch::where('id', $batchId)->lockForUpdate()->first();
                 }
 
-                if ($batch->qty_remaining < $remaining) {
-                    throw \Illuminate\Validation\ValidationException::withMessages(['error' => "Batch {$batch->batch_number} only has {$batch->qty_remaining} left, but {$remaining} is required."]);
+                if ($batch) {
+                    $batch->qty_remaining = max(0, (float)$batch->qty_remaining - $remaining);
+                    if ($batch->qty_remaining <= 0) {
+                        $batch->status = 'consumed';
+                    }
+                    $batch->save();
+                    $deductions[] = [
+                        'batch_id'     => $batch->id,
+                        'qty'          => $remaining,
+                        'warehouse_id' => $batch->warehouse_id ?? $warehouseId,
+                    ];
+                } else {
+                    $fallbackBatch = ProductBatch::firstOrCreate(
+                        [
+                            'product_id'   => $productId,
+                            'warehouse_id' => $warehouseId,
+                            'branch_id'    => $branchId,
+                            'batch_number' => 'NO-BATCH',
+                        ],
+                        [
+                            'mfg_date'      => null,
+                            'exp_date'      => null,
+                            'qty_received'  => 0,
+                            'qty_remaining' => 0,
+                            'source_type'   => 'opening_stock',
+                            'status'        => 'consumed',
+                        ]
+                    );
+                    $deductions[] = [
+                        'batch_id'     => $fallbackBatch->id,
+                        'qty'          => $remaining,
+                        'warehouse_id' => $warehouseId,
+                    ];
                 }
-
-                $batch->qty_remaining -= $remaining;
-                if ($batch->qty_remaining <= 0) {
-                    $batch->status = 'consumed';
-                }
-                $batch->save();
-                $deductions[] = ['batch_id' => $batch->id, 'qty' => $remaining];
+                $remaining = 0;
             } else {
                 // FEFO Auto mode — sort by earliest expiry
                 // 1. Try preferred warehouse first
@@ -371,9 +396,31 @@ class ProductBatchController extends Controller
                     }
                 }
 
+                // If still remaining (insufficient stock / 0 stock), create or link to fallback batch so sale is never blocked
                 if ($remaining > 0) {
-                    $productName = \App\Models\Product::where('id', $productId)->value('item_name');
-                    throw \Illuminate\Validation\ValidationException::withMessages(['error' => "Insufficient stock for {$productName}. Missing {$remaining} units in the active branch."]);
+                    $fallbackBatch = ProductBatch::firstOrCreate(
+                        [
+                            'product_id'   => $productId,
+                            'warehouse_id' => $warehouseId,
+                            'branch_id'    => $branchId,
+                            'batch_number' => 'NO-BATCH',
+                        ],
+                        [
+                            'mfg_date'      => null,
+                            'exp_date'      => null,
+                            'qty_received'  => 0,
+                            'qty_remaining' => 0,
+                            'source_type'   => 'opening_stock',
+                            'status'        => 'consumed',
+                        ]
+                    );
+
+                    $deductions[] = [
+                        'batch_id'     => $fallbackBatch->id,
+                        'qty'          => $remaining,
+                        'warehouse_id' => $warehouseId,
+                    ];
+                    $remaining = 0;
                 }
             }
 
