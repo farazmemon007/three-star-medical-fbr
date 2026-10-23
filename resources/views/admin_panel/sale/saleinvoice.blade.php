@@ -126,9 +126,16 @@ if (!empty($fbrInvoiceNumber)) {
   .approval-line { border-bottom: 1px solid #000; width: 190px; margin-top: 2px; }
 
   @media print {
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
     body { background: #fff; }
     .action-bar { display: none !important; }
     .a4-wrapper { box-shadow: none; margin: 0; width: 100%; padding: 12mm 14mm; min-height: auto; }
+    .barcode-right { display: flex !important; }
+    .barcode-right img { display: block !important; }
     @page { size: A4; margin: 0; }
   }
 </style>
@@ -208,7 +215,7 @@ if (!empty($fbrInvoiceNumber)) {
     </div>
     <div class="barcode-right">
       <div style="display:flex;justify-content:center;padding:2px 0;">
-        {!! DNS1D::getBarcodeHTML($sale->invoice_no ?? (string)$sale->id, 'C128', 1, 35) !!}
+        <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($sale->invoice_no ?? (string)$sale->id, 'C128', 1.2, 38) }}" alt="Barcode" style="display:block; height:36px; max-height:38px; width:auto; image-rendering:pixelated;">
       </div>
       <div class="barcode-num">{{ $sale->invoice_no ?? $sale->id }}</div>
     </div>
@@ -306,15 +313,15 @@ if (!empty($fbrInvoiceNumber)) {
       @endforeach
       <!-- Grand Total Row -->
       <tr style="background:#e8e8e8; font-weight:bold; border-top:1.5px solid #000;">
-        <td colspan="4" class="r" style="font-size:10px; padding:5px 6px;">Total Items: {{ count($saleItems) }}</td>
+        <td colspan="4" class="r" style="font-size:10.5px; padding:5px 6px; font-weight:bold;">Total Items: {{ count($saleItems) }}</td>
         <td class="r" style="font-weight:bold; font-size:10.5px;">{{ rtrim(rtrim(number_format($grandQty, 2), '0'), '.') }}</td>
         <td></td>
-        <td class="r" style="font-weight:bold; font-size:10.5px;">{{ number_format($grandValExcl, 2) }}</td>
+        <td class="r" style="font-weight:bold; font-size:11px;">{{ number_format($grandValExcl, 2) }}</td>
         <td></td>
-        <td class="r" style="font-weight:bold; font-size:10.5px;">{{ number_format($grandSalesTax, 2) }}</td>
+        <td class="r" style="font-weight:bold; font-size:11px;">{{ number_format($grandSalesTax, 2) }}</td>
         <td></td>
-        <td class="r" style="font-weight:bold; font-size:10.5px;">{{ $grandFTax > 0 ? number_format($grandFTax, 2) : '' }}</td>
-        <td class="r" style="font-weight:bold; font-size:11px;">{{ number_format($grandValIncl, 2) }}</td>
+        <td class="r" style="font-weight:bold; font-size:11px;">{{ $grandFTax > 0 ? number_format($grandFTax, 2) : '' }}</td>
+        <td class="r" style="font-weight:900; font-size:14px; background:#cecece; color:#000; padding:6px 5px; border:1.5px solid #000; border-bottom:3px double #000; white-space:nowrap; letter-spacing:0.3px;">{{ number_format($grandValIncl, 2) }}</td>
       </tr>
     </tbody>
   </table>
