@@ -84,11 +84,13 @@ if (!empty($fbrInvoiceNumber)) {
   .doc-title { text-align: center; font-size: 15px; font-weight: bold; text-decoration: underline; margin: 8px 0 6px; letter-spacing: 1px; }
 
   /* Party + Meta row */
-  .party-meta { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .party-meta { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px; align-items: stretch; }
   .party-block { font-size: 10.5px; line-height: 1.85; flex: 1; }
+  .party-block-left { align-self: flex-start; }
+  .party-block-right { display: flex; flex-direction: column; justify-content: flex-end; align-self: flex-end; text-align: right; }
   .prow { display: flex; gap: 4px; }
   .plbl { font-weight: bold; min-width: 68px; }
-  .barcode-right { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 2px; }
+  .barcode-right { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; align-self: flex-end; padding-bottom: 2px; }
   .barcode-num { font-size: 8.5px; letter-spacing: 0.5px; text-align: center; margin-top: 1px; font-weight: bold; }
   .fbr-footer-wrap { margin-top: 18px; display: flex; justify-content: center; width: 100%; }
   .fbr-box-wrapper { text-align: center; display: flex; flex-direction: column; align-items: center; }
@@ -193,7 +195,7 @@ if (!empty($fbrInvoiceNumber)) {
 
   <!-- PARTY + BARCODE -->
   <div class="party-meta">
-    <div class="party-block">
+    <div class="party-block party-block-left">
       <div class="prow"><span class="plbl">To :</span><span><strong>{{ optional($sale->customer_relation)->customer_name ?? 'WALKING CUSTOMER' }}</strong></span></div>
       <div class="prow"><span class="plbl">Address :</span><span>{{ optional($sale->customer_relation)->address ?? '-' }}</span></div>
       <div class="prow"><span class="plbl">Contact :</span><span>{{ optional($sale->customer_relation)->mobile ?? optional($sale->customer_relation)->phone ?? '-' }}</span></div>
@@ -202,7 +204,7 @@ if (!empty($fbrInvoiceNumber)) {
       <div class="prow"><span class="plbl">Sales Officer :</span><span>{{ $officerName }}</span></div>
       @endif
     </div>
-    <div class="party-block" style="text-align:right;">
+    <div class="party-block party-block-right">
       <div class="prow" style="justify-content:flex-end;"><span class="plbl">Invoice # :</span><span><strong>{{ $sale->invoice_no ?? $sale->id }}</strong></span></div>
       <div class="prow" style="justify-content:flex-end;"><span class="plbl">Sale Date :</span><span>{{ $sale->sale_date ? \Carbon\Carbon::parse($sale->sale_date)->format('d/m/Y') : $sale->created_at->format('d/m/Y') }}</span></div>
       @if($sale->order_no)
