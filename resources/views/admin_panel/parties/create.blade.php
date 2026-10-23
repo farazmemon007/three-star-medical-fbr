@@ -423,32 +423,41 @@
                                     </div>
                                 </div>
 
-                                {{-- Row: GST + FTN --}}
+                                {{-- Row: Filer Type + GST --}}
                                 <div class="grid-2">
+                                    <div class="form-group-modern">
+                                        <label class="label-modern">Filer Type (FBR Status)</label>
+                                        <select class="input-modern select-modern" name="filer_type" id="filerType">
+                                            <option value="Non-Filer" {{ old('filer_type', 'Non-Filer') == 'Non-Filer' ? 'selected' : '' }}>Non-Filer</option>
+                                            <option value="Filer" {{ old('filer_type') == 'Filer' ? 'selected' : '' }}>Filer</option>
+                                        </select>
+                                    </div>
                                     <div class="form-group-modern">
                                         <label class="label-modern">GST # (Optional)</label>
                                         <input type="text" class="input-modern" name="gst_no"
-                                            placeholder="Sales Tax ID">
-                                    </div>
-                                    <div class="form-group-modern">
-                                        <label class="label-modern">FTN # (Optional)</label>
-                                        <input type="text" class="input-modern" name="ftn_no"
-                                            placeholder="e.g. 1347561-4">
+                                            value="{{ old('gst_no') }}" placeholder="Sales Tax ID">
                                     </div>
                                 </div>
 
-                                {{-- Row: DSL + DRAP --}}
+                                {{-- Row: FTN + DSL --}}
                                 <div class="grid-2">
+                                    <div class="form-group-modern">
+                                        <label class="label-modern">FTN # (Optional)</label>
+                                        <input type="text" class="input-modern" name="ftn_no"
+                                            value="{{ old('ftn_no') }}" placeholder="e.g. 1347561-4">
+                                    </div>
                                     <div class="form-group-modern">
                                         <label class="label-modern">DSL # (Optional)</label>
                                         <input type="text" class="input-modern" name="dsl_no"
-                                            placeholder="Drug Sale Lic.">
+                                            value="{{ old('dsl_no') }}" placeholder="Drug Sale Lic.">
                                     </div>
-                                    <div class="form-group-modern">
-                                        <label class="label-modern">DRAP # (Optional)</label>
-                                        <input type="text" class="input-modern" name="drap_no"
-                                            placeholder="Medical Reg.">
-                                    </div>
+                                </div>
+
+                                {{-- Row: DRAP --}}
+                                <div class="form-group-modern">
+                                    <label class="label-modern">DRAP # (Optional)</label>
+                                    <input type="text" class="input-modern" name="drap_no"
+                                        value="{{ old('drap_no') }}" placeholder="Medical Reg.">
                                 </div>
 
                                 {{-- Branch Selection (Super Admin Only) --}}

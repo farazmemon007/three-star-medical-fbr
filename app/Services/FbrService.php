@@ -251,7 +251,26 @@ class FbrService
             $sroSchedule = $item->sro_schedule ?? ($product?->sro_schedule ?? '');
             $sroSerial = $item->sro_item_serial ?? ($product?->sro_item_serial ?? '');
             $retailPrice = (float)($item->retail_price ?? ($product?->retail_price ?? 0.0));
-            $uom = $defaultUom;
+            $rawUom = !empty($item->uom_name) ? trim($item->uom_name) : (trim($product?->unit?->name ?? ''));
+            $uomUpper = strtoupper($rawUom);
+            if (empty($rawUom)) {
+                $uom = $defaultUom;
+            } elseif (in_array($uomUpper, ['KG', 'KGS', 'KILOGRAM', 'KILOGRAMS'])) {
+                $uom = 'KG';
+            } elseif (in_array($uomUpper, ['NO', 'NOS', 'PC', 'PCS', 'PIECE', 'PIECES', 'UNIT', 'UNITS', 'NUMBER', 'NUMBERS'])) {
+                $uom = 'Numbers, pieces, units';
+            } elseif (in_array($uomUpper, ['L', 'LTR', 'LITRE', 'LITRES', 'LITER', 'LITERS'])) {
+                $uom = 'Litres';
+            } elseif (in_array($uomUpper, ['M', 'MTR', 'METER', 'METERS', 'METRE', 'METRES'])) {
+                $uom = 'Meters';
+            } elseif (in_array($uomUpper, ['PACK', 'PACKS', 'PKT', 'PACKET', 'PACKETS'])) {
+                $uom = 'Packs';
+            } elseif (in_array($uomUpper, ['BOX', 'BOXES'])) {
+                $uom = 'Cartons';
+            } else {
+                // Send exactly what user typed in the UOM field
+                $uom = $rawUom;
+            }
 
             if (str_contains(strtolower($itemSaleType), '3rd schedule') || (!empty($retailPrice) && $retailPrice > 0 && $gstRateNum == 18)) {
                 // 3rd Schedule Goods
