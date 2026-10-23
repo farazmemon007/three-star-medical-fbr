@@ -1970,22 +1970,22 @@
             $row.data('total-free-pieces', total_free_pieces);
 
             let billableQty = paid.boxes + (pack > 0 ? (paid.pieces / pack) : 0);
-            let line_gross = billableQty * price;
-            let line_disc  = (discType === 'percent') ? (line_gross * discVal / 100) : discVal;
+            let line_gross = Math.round((billableQty * price) * 100) / 100;
+            let line_disc  = (discType === 'percent') ? (Math.round((line_gross * discVal / 100) * 100) / 100) : discVal;
 
-            let subTotal = Math.max(0, line_gross - line_disc);
+            let subTotal = Math.max(0, Math.round((line_gross - line_disc) * 100) / 100);
 
-            const gstAmt   = subTotal * (gstRate / 100);   // GST: ADDED
+            const gstAmt   = Math.round((subTotal * (gstRate / 100)) * 100) / 100;   // GST: ADDED
             $row.find('.gst-amount-row').val(gstAmt.toFixed(2));
 
             const incTaxPct  = num($row.find('.inc-tax').val());
             const advTaxVal  = num($row.find('.adv-tax').val());
             const advTaxType = $row.find('.adv-tax-type').val() || 'percent';
 
-            const incTaxAmt = subTotal * (incTaxPct / 100); // WHT: DEDUCTED
-            const advTaxAmt = (advTaxType === 'percent') ? (subTotal * (advTaxVal / 100)) : advTaxVal; // Adv: ADDED
+            const incTaxAmt = Math.round((subTotal * (incTaxPct / 100)) * 100) / 100; // WHT: DEDUCTED
+            const advTaxAmt = (advTaxType === 'percent') ? (Math.round((subTotal * (advTaxVal / 100)) * 100) / 100) : advTaxVal; // Adv: ADDED
             // Line net: sub + GST - WHT + Adv
-            const netTotal  = subTotal + gstAmt - incTaxAmt + advTaxAmt;
+            const netTotal  = Math.round((subTotal + gstAmt - incTaxAmt + advTaxAmt) * 100) / 100;
 
             $row.find('.row-sub-total').val(subTotal.toFixed(2));
             $row.find('.row-net-total').val(netTotal.toFixed(2));
@@ -2020,8 +2020,8 @@
                 let paid = parseBoxPieceNew($r.find('.quantity'), $r.find('.loose_pieces'), pack);
 
                 let billableQty = paid.boxes + (pack > 0 ? (paid.pieces / pack) : 0);
-                let rowGross  = billableQty * price;
-                let rowDisc   = (discType === 'percent') ? (rowGross * discVal / 100) : discVal;
+                let rowGross  = Math.round((billableQty * price) * 100) / 100;
+                let rowDisc   = (discType === 'percent') ? (Math.round((rowGross * discVal / 100) * 100) / 100) : discVal;
                 
                 let rowGst    = num($r.find('.gst-amount-row').val());
                 let rowSub    = num($r.find('.row-sub-total').val());

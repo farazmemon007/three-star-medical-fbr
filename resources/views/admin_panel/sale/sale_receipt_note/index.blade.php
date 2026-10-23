@@ -437,9 +437,43 @@
                                         </div>
                                     </td>
                                     <td class="text-end">
+                                        @php
+                                            $hasItems = $sale->items && $sale->items->isNotEmpty();
+                                            if ($hasItems) {
+                                                $calcGross = 0;
+                                                $calcGst = 0;
+                                                $calcNet = 0;
+                                                foreach ($sale->items as $it) {
+                                                    $iqty = (float)(!empty($it->qty) && $it->qty > 0 ? $it->qty : ($it->total_pieces ?? 1));
+                                                    $iprice = (float)($it->price ?? 0);
+                                                    $ilineSub = round($iqty * $iprice, 2);
+                                                    $idisc = (float)($it->discount_amount ?? 0);
+                                                    $ivalExcl = max(0, round($ilineSub - $idisc, 2));
+                                                    $igstPct = (float)($it->gst_percent ?? $it->gst ?? 0);
+                                                    $igstAmt = (float)($it->gst_amount ?? 0);
+                                                    if ($igstAmt == 0 && $igstPct > 0) {
+                                                        $igstAmt = round($ivalExcl * ($igstPct / 100), 2);
+                                                    }
+                                                    $ifTaxAmt = (float)($it->further_tax_amount ?? 0);
+                                                    $ivalIncl = round($ivalExcl + $igstAmt + $ifTaxAmt, 2);
+
+                                                    $calcGross += $ivalExcl;
+                                                    $calcGst += $igstAmt;
+                                                    $calcNet += $ivalIncl;
+                                                }
+                                                $dispGross = $calcGross;
+                                                $dispGst = $calcGst;
+                                                $dispNet = round($calcNet - (float)($sale->total_extradiscount ?? 0) + (float)($sale->total_freight ?? 0) + (float)($sale->total_expense ?? 0), 2);
+                                            } else {
+                                                $dispGross = (float)$sale->total_bill_amount;
+                                                $dispGst = (float)$sale->total_gst;
+                                                $dispNet = (float)$sale->total_net;
+                                            }
+                                            $dispUpdatedNet = max(0, round($dispNet - (float)($sale->total_returned ?? 0), 2));
+                                        @endphp
                                         <div class="text-muted mb-1 font-monospace" style="font-size: 0.65rem; text-transform: uppercase; line-height: 1.2;">
-                                            Gross: <span class="fw-bold text-dark">{{ number_format($sale->total_bill_amount, 2) }}</span><br>
-                                            GST: <span class="fw-bold text-dark">{{ number_format($sale->total_gst, 2) }}</span><br>
+                                            Gross: <span class="fw-bold text-dark">{{ number_format($dispGross, 2) }}</span><br>
+                                            GST: <span class="fw-bold text-dark">{{ number_format($dispGst, 2) }}</span><br>
                                             @if(($sale->total_inc_tax ?? 0) > 0) Inc. Tax: <span class="fw-bold text-dark">{{ number_format($sale->total_inc_tax, 2) }}</span><br> @endif
                                             @if(($sale->total_adv_tax ?? 0) > 0) Adv. Tax: <span class="fw-bold text-dark">{{ number_format($sale->total_adv_tax, 2) }}</span><br> @endif
                                             Disc: <span class="fw-bold text-danger">{{ number_format($sale->total_extradiscount, 2) }}</span>
@@ -448,14 +482,13 @@
                                             @if (($sale->total_returned ?? 0) > 0)
                                                 <div class="text-decoration-line-through text-muted small"
                                                     style="font-size: 0.7rem;">
-                                                    {{ number_format($sale->total_net, 2) }}</div>
-                                                <span>{{ number_format($sale->updated_net_amount, 2) }}</span>
+                                                    {{ number_format($dispNet, 2) }}</div>
+                                                <span>{{ number_format($dispUpdatedNet, 2) }}</span>
                                             @else
-                                                {{ number_format($sale->total_net, 2) }}
+                                                {{ number_format($dispNet, 2) }}
                                             @endif
                                         </div>
                                         <div class="amt-status">
-                                            @php $displayPrice = ($sale->total_returned ?? 0) > 0 ? $sale->updated_net_amount : $sale->total_net; @endphp
                                             @if($sale->sale_status === 'post')
                                                 <span class="text-success fw-800"><i
                                                         class="fas fa-check-circle me-1"></i>Posted</span>

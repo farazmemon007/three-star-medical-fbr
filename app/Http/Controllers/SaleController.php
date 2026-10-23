@@ -1384,30 +1384,30 @@ class SaleController extends Controller
 
                 // Calculate Line Subtotal (after item discount) - Box Qty * Price
                 $billableQty = $boxes + ($ppb > 0 ? ($loose / $ppb) : 0);
-                $subTotal = (float) ($billableQty * $dbPrice);
+                $subTotal = round((float) ($billableQty * $dbPrice), 2);
                 $calcDiscountAmount = 0;
                 $calcDiscountPercent = 0;
 
                 if ($discType === 'percent') {
-                     $calcDiscountAmount = ($subTotal * $discount / 100);
+                     $calcDiscountAmount = round($subTotal * $discount / 100, 2);
                      $calcDiscountPercent = $discount;
                 } else {
                      // Fixed Amount (now treated as TOTAL row discount)
-                     $calcDiscountAmount = $discount;
-                     $calcDiscountPercent = $subTotal > 0 ? ($discount / $subTotal) * 100 : 0;
+                     $calcDiscountAmount = round($discount, 2);
+                     $calcDiscountPercent = $subTotal > 0 ? round(($discount / $subTotal) * 100, 2) : 0;
                 }
                 
-                $postDiscSub = max(0, $subTotal - $calcDiscountAmount);
+                $postDiscSub = max(0, round($subTotal - $calcDiscountAmount, 2));
 
                 // Pakistan Standard line calculation:
                 // GST is ADDED on post-disc subtotal
-                $rowGstAmount = $postDiscSub * ($gstRate / 100);
+                $rowGstAmount = round($postDiscSub * ($gstRate / 100), 2);
                 // WHT is DEDUCTED (applied on post-disc subtotal, NOT on GST)
-                $incTaxAmt    = $postDiscSub * ($incTaxPct / 100);
+                $incTaxAmt    = round($postDiscSub * ($incTaxPct / 100), 2);
                 // Advance Tax is ADDED
-                $advTaxAmt    = ($advTaxType === 'percent') ? ($postDiscSub * ($advTaxVal / 100)) : $advTaxVal;
+                $advTaxAmt    = ($advTaxType === 'percent') ? round($postDiscSub * ($advTaxVal / 100), 2) : round($advTaxVal, 2);
                 // Line total stored: subtotal + GST - WHT + Adv
-                $lineTotal    = $postDiscSub + $rowGstAmount - $incTaxAmt + $advTaxAmt;
+                $lineTotal    = round($postDiscSub + $rowGstAmount - $incTaxAmt + $advTaxAmt, 2);
 
                 $saleItem = new SaleItem;
                 $saleItem->sale_id = $sale->id;
@@ -1533,21 +1533,21 @@ class SaleController extends Controller
             }
 
             // Update Sale Totals
-            $sale->total_bill_amount = $total_bill; // Pre-tax Pre-bill-disc
+            $sale->total_bill_amount = round($total_bill, 2); // Pre-tax Pre-bill-disc
             $billDiscVal = (float) ($request->discount ?? 0);
             $billDiscType = $request->discount_type ?? 'amount';
             
             $calcBillDiscAmount = 0;
             if ($billDiscType === 'percent') {
-                $calcBillDiscAmount = $total_bill * ($billDiscVal / 100);
+                $calcBillDiscAmount = round($total_bill * ($billDiscVal / 100), 2);
             } else {
-                $calcBillDiscAmount = $billDiscVal;
+                $calcBillDiscAmount = round($billDiscVal, 2);
             }
 
-            $sale->total_extradiscount = $calcBillDiscAmount;
-            $sale->total_gst = $total_gst;
-            $sale->total_inc_tax = $total_inc_tax;
-            $sale->total_adv_tax = $total_adv_tax;
+            $sale->total_extradiscount = round($calcBillDiscAmount, 2);
+            $sale->total_gst = round($total_gst, 2);
+            $sale->total_inc_tax = round($total_inc_tax, 2);
+            $sale->total_adv_tax = round($total_adv_tax, 2);
             
             $sale->total_freight  = (float)($request->freight_charges ?? $request->freight ?? $request->sum_freight ?? 0);
             $sale->total_expense  = (float)($request->extra_cost ?? $request->expense ?? $request->sum_expense ?? 0);
@@ -1556,11 +1556,11 @@ class SaleController extends Controller
             // Pakistan Standard Net:
             // Invoice Total = (net_post_disc + freight + expense) + GST
             // Net Payable   = Invoice Total - WHT - Adv
-            $netPostDisc        = $total_bill - $calcBillDiscAmount;
-            $gstBase            = $netPostDisc + $sale->total_freight + $sale->total_expense;
-            $invoiceTotal       = $gstBase + $total_gst;
-            $sale->total_net    = $invoiceTotal - $total_inc_tax + $total_adv_tax;
-            $sale->total_items = $total_items;
+            $netPostDisc        = round($total_bill - $calcBillDiscAmount, 2);
+            $gstBase            = round($netPostDisc + $sale->total_freight + $sale->total_expense, 2);
+            $invoiceTotal       = round($gstBase + $total_gst, 2);
+            $sale->total_net    = round($invoiceTotal - $total_inc_tax + $total_adv_tax, 2);
+            $sale->total_items  = $total_items;
 
             $sale->cash = $request->cash ?? 0;
             $sale->change = ($sale->cash - $sale->total_net);
